@@ -11,6 +11,14 @@ public class PlayerController : MonoBehaviour
     private PlayerBaseState currentState;
     private CharacterController controller;
     private AbilityManager abilityManager;
+    private EnemyManager enemyManager;
+    private bool isPaused;
+    private bool isBlocking;
+    private GameManager gameManager;
+    private PlayerStats playerStats;
+    private HUD hud;
+    public bool IsPaused { get => isPaused; set => isPaused = value; }
+    public bool IsBlocking { get => isBlocking; set => isBlocking = value; }
 
     #region Animation
     private Animator animator;
@@ -26,40 +34,80 @@ public class PlayerController : MonoBehaviour
     private Controls controls;
     private Vector2 movePlayerInput;
     private bool[] isActionInputs;
-    private bool isAction1Input;
-    private bool isAction2Input;
-    private bool isAction3Input;
-    private bool isAction4Input;
+    private bool isMenuInput;
+    private bool isSwapPrevTargetInput;
+    private bool isSwapNextTargetInput;
+    private bool isAcceptInput;
+    private bool isBackInput;
 
+    public Controls Controls { get => controls; }
     public Vector2 MovePlayerInput { get => movePlayerInput; }
     public bool[] IsActionInputs { get => isActionInputs; }
-    public bool IsAction1Input { get => isAction1Input; set => isAction1Input = value; }
-    public bool IsAction2Input { get => isAction2Input; set => isAction2Input = value; }
-    public bool IsAction3Input { get => isAction3Input; set => isAction3Input = value; }
-    public bool IsAction4Input { get => isAction4Input; set => isAction4Input = value; }
+    public bool IsMenuInput { get => isMenuInput; set => isMenuInput = value; }
+    public bool IsSwapPrevTargetInput { get => isSwapPrevTargetInput; set => isSwapPrevTargetInput = value; }
+    public bool IsSwapNextTargetInput { get => isSwapNextTargetInput; set => isSwapNextTargetInput = value; }
+    public bool IsAcceptInput { get => isAcceptInput; set => isAcceptInput = value; }
+    public bool IsBackInput { get => isBackInput; set => isBackInput = value; }
     #endregion
 
 
     public PlayerBaseState CurrentState { get => currentState; set => currentState = value; }
     public CharacterController Controller { get => controller; }
     public AbilityManager AbilityManager { get => abilityManager; }
+    public EnemyManager EnemyManager { get => enemyManager; }
+    public GameManager GameManager { get => gameManager; }
+    public PlayerStats PlayerStats { get => playerStats; }
+    public HUD HUD { get => hud; }
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
-        abilityManager = GameObject.Find("AbilityManager").GetComponent<AbilityManager>();
+        abilityManager = GetComponent<AbilityManager>();
+        abilityManager.Setup(handPosition.transform, animator, "Enemy");
+        enemyManager = GameObject.Find("EnemyManager").GetComponent<EnemyManager>();
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        playerStats = GetComponent<PlayerStats>();
+        hud = GameObject.FindObjectOfType<HUD>();
+        playerStats.Setup();
         SetupControls();
 
         states = new PlayerStateFactory(this);
         currentState = states.CombatState();
+        isPaused = false;
+        gameManager.IsGamePaused = false;
+        isBlocking = false;
+    }
+
+    private void Start()
+    {
         currentState.EnterState();
+        hud.UpdateHealth(playerStats.GetHealth());
     }
 
     // Update is called once per frame
     void Update()
     {
         currentState.UpdateState();
+    }
+
+    public void TakeDamage(float damage)
+    {
+        float newDamage = isBlocking ? damage * 0.2f : damage;
+
+        float healthReduction = Mathf.Min(playerStats.Health, newDamage);
+
+        playerStats.Health -= healthReduction;
+        playerStats.Health = Mathf.RoundToInt(playerStats.Health);
+        hud.UpdateHealth(playerStats.GetHealth());
+
+        if (playerStats.Health <= 0)
+        {
+            print("Player is dead!");
+            gameManager.EndBattle(false, 0);
+            animator.SetFloat(movementX, 0);
+            animator.SetFloat(movementY, 0);
+        }
     }
 
     #region setupcontrols
@@ -79,6 +127,17 @@ public class PlayerController : MonoBehaviour
         controls.Combat.Action3.canceled += OnAction3Input;
         controls.Combat.Action4.started += OnAction4Input;
         controls.Combat.Action4.canceled += OnAction4Input;
+        controls.Combat.Menu.started += OnMenuInput;
+        controls.Combat.Menu.canceled += OnMenuInput;
+        controls.Combat.SwapPrevTarget.started += OnSwapPrevTargetInput;
+        controls.Combat.SwapPrevTarget.canceled += OnSwapPrevTargetInput;
+        controls.Combat.SwapNextTarget.started += OnSwapNextTargetInput;
+        controls.Combat.SwapNextTarget.canceled += OnSwapNextTargetInput;
+
+        controls.Menu.Accept.started += OnAcceptInput;
+        controls.Menu.Accept.canceled += OnAcceptInput;
+        controls.Menu.Back.started += OnBackInput;
+        controls.Menu.Back.canceled += OnBackInput;
     }
 
     private void OnMovePlayerInput(InputAction.CallbackContext context)
@@ -104,6 +163,31 @@ public class PlayerController : MonoBehaviour
     private void OnAction4Input(InputAction.CallbackContext context)
     {
         isActionInputs[3] = context.ReadValueAsButton();
+    }
+
+    private void OnMenuInput(InputAction.CallbackContext context)
+    {
+        isMenuInput = context.ReadValueAsButton();
+    }
+
+    private void OnSwapPrevTargetInput(InputAction.CallbackContext context)
+    {
+        isSwapPrevTargetInput = context.ReadValueAsButton();
+    }
+
+    private void OnSwapNextTargetInput(InputAction.CallbackContext context)
+    {
+        isSwapNextTargetInput = context.ReadValueAsButton();
+    }
+
+    private void OnAcceptInput(InputAction.CallbackContext context)
+    {
+        isAcceptInput = context.ReadValueAsButton();
+    }
+
+    private void OnBackInput(InputAction.CallbackContext context)
+    {
+        isBackInput = context.ReadValueAsButton();
     }
 
     private void OnEnable()

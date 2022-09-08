@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,53 +14,66 @@ public class CombatState : PlayerBaseState
     private const float DASHSPEED = 10.0f;
 
     private Transform enemyTransform;
+    private int currentEnemy;
     private bool isActionActive;
+    private int actionOption;
     private string[] actions;
-    private Dictionary<string, float> animationTime;
 
     public override void EnterState()
     {
-        enemyTransform = GameObject.Find("Enemy").transform;
-        isActionActive = false;
+        currentEnemy = 0;
         actions = new string[] { "Fireball", "Lightning", "Attack", "Block" };
-        animationTime = new Dictionary<string, float>();
-        AnimationClip[] clips = ctx.Animator.runtimeAnimatorController.animationClips;
-
-        foreach (AnimationClip clip in clips)
-        {
-            animationTime.Add(clip.name, clip.length);
-        }
+        ctx.HUD.UpdateNames(actions);
+        ctx.IsMenuInput = false;
     }
     public override void UpdateState()
     {
+        CheckSwitchState();
+        SwapTarget();
+
+        if (ctx.IsMenuInput)
+        {
+            ctx.IsPaused = !ctx.IsPaused;
+            ctx.GameManager.IsGamePaused = ctx.IsPaused;
+            ctx.IsMenuInput = false;
+        }
+
+        if (ctx.IsPaused)
+        {
+            ctx.Animator.StartPlayback();
+            return;
+        }
+
+        ctx.Animator.StopPlayback();
+
         if (enemyTransform == null)
         {
-            GameObject enemy = GameObject.Find("Enemy");
-
-            if (enemy == null)
-            {
-                Debug.Log("All enemies are dead");
-                return;
-            }
-
-            enemyTransform = enemy.transform;
+            if (!ctx.EnemyManager.IsEnemiesAlive()) return;
+            
+            currentEnemy = ctx.EnemyManager.GetNewEnemyIndex(currentEnemy, 0);
+            enemyTransform = ctx.EnemyManager.GetEnemyTransform(currentEnemy);
+            ctx.AbilityManager.NewTarget(enemyTransform);
         }
 
         ActionButtons();
+        RotatePlayer();
 
         if (!isActionActive)
         {
             MovePlayer();
-            RotatePlayer();
         }
-
-        CheckSwitchState();
     }
     public override void ExitState()
     {
     }
     public override void CheckSwitchState()
     {
+        if (ctx.GameManager.IsGameOver)
+        {
+            ctx.Animator.SetFloat(ctx.MovementX, 0);
+            ctx.Animator.SetFloat(ctx.MovementY, 0);
+            SwitchState(factory.EndBattleState());
+        }
     }
 
     private void MovePlayer()
@@ -80,63 +94,61 @@ public class CombatState : PlayerBaseState
 
     private void RotatePlayer()
     {
-        Vector3 target = enemyTransform.position;
+        Vector3 target = (enemyTransform.position - ctx.transform.position).normalized;
         target.y = ctx.transform.position.y;
 
-        ctx.transform.LookAt(target);
+        Quaternion targetRotation = Quaternion.LookRotation(target);
+        ctx.transform.rotation = Quaternion.Lerp(ctx.transform.rotation, targetRotation, Time.deltaTime);
     }
 
     private void ActionButtons()
     {
-        int actionOption = -1;
-
-        // Find the first button that has been pressed
-        for (int i = 0; i < ctx.IsActionInputs.Length; i++)
+        if (isActionActive)
         {
-            if (ctx.IsActionInputs[i])
+            if (ctx.IsActionInputs[actionOption])
             {
-                actionOption = i;
-                break;
+                ctx.AbilityManager.Abilities[actions[actionOption]].UseAbility();
             }
-        }
-
-        List<int> isActives = new List<int>();
-
-        // Find Which abilities are currently active.
-        // Stop any abilities that are not currently being pressed.
-        // NOTE: only abilities that need a constant press can be stopped. i.e. block
-
-        for (int i = 0; i < ctx.IsActionInputs.Length; i++)
-        {
-            if (ctx.AbilityManager.Abilities[actions[i]].IsActive)
+            else
             {
-                isActives.Add(i);
+                ctx.AbilityManager.Abilities[actions[actionOption]].StopAbility();
             }
 
-            if (i == actionOption) continue;
+            isActionActive = ctx.AbilityManager.Abilities[actions[actionOption]].IsActive;
 
-            ctx.AbilityManager.Abilities[actions[i]].StopAbility(ctx.Animator);
-        }
+            if (!isActionActive) ctx.HUD.StopHighlight(actionOption);
 
-        isActionActive = isActives.Count > 0 ? true : false; //Toggle the isActionActive based on how many items are in the list.
-
-        // If no button was pressed skip the rest of the method.
-        if (actionOption == -1 && !isActionActive)
-        {
             return;
         }
 
-        // If the item in the isActives is not the same as the action button, return.
-        foreach (int item in isActives)
-        {
-            if (item != actionOption && actionOption != -1) return;
-        }
+        actionOption = Array.IndexOf(ctx.IsActionInputs, true);
+
+        // If no button was pressed skip the rest of the method.
+        if (actionOption == -1) return;
 
         ctx.Animator.SetFloat(ctx.MovementX, 0);
         ctx.Animator.SetFloat(ctx.MovementY, 0);
 
-        int actionSelect = actionOption == -1 ? isActives[0] : actionOption;
+        ctx.AbilityManager.Abilities[actions[actionOption]].UseAbility();
+        isActionActive = true;
+        ctx.HUD.StartHighlight(actionOption);
+    }
 
-        ctx.AbilityManager.Abilities[actions[actionSelect]].UseAbility(ctx.Animator, enemyTransform, ctx.HandPosition.transform);
+    private void SwapTarget()
+    {
+        if (!ctx.IsSwapPrevTargetInput && !ctx.IsSwapNextTargetInput) return;
+
+        int indexShift = 1;
+        ctx.IsSwapNextTargetInput = false;
+
+        if (ctx.IsSwapPrevTargetInput)
+        {
+            indexShift = -1;
+            ctx.IsSwapPrevTargetInput = false;
+        }
+
+        currentEnemy = ctx.EnemyManager.GetNewEnemyIndex(currentEnemy, indexShift);
+        enemyTransform = ctx.EnemyManager.GetEnemyTransform(currentEnemy);
+        ctx.AbilityManager.NewTarget(enemyTransform);
     }
 }

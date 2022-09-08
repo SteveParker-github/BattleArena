@@ -4,6 +4,7 @@ using UnityEngine;
 
 public abstract class Ability
 {
+    protected AbilityManager ctx;
     protected string abilityName;
     protected float staminaCost;
     protected string animationName;
@@ -14,8 +15,9 @@ public abstract class Ability
     public float StaminaCost { get => staminaCost; }
     public bool IsActive { get => isActive; }
 
-    public Ability(string abilityName, float staminaCost, string animationName, bool canStop)
+    public Ability(AbilityManager ctx, string abilityName, float staminaCost, string animationName, bool canStop)
     {
+        this.ctx = ctx;
         this.abilityName = abilityName;
         this.staminaCost = staminaCost;
         this.animationName = animationName;
@@ -23,20 +25,15 @@ public abstract class Ability
         isActive = false;
     }
 
-    public abstract void UseAbility(Animator animator, Transform enemyTransform, Transform handTransform);
+    public abstract void UseAbility();
 
-    public void StopAbility(Animator animator)
+    public virtual void StopAbility()
     {
         if (isActive)
         {
-            if (canStop)
-            {
-                isActive = false;
-                animator.SetTrigger("EscapeAction");
-                return;
-            }
+            ContinueAbility();
         }
     }
 
-    protected abstract void ContinueAbility(Transform EnemyTransform, Transform handTransform);
+    protected abstract void ContinueAbility();
 }

@@ -6,22 +6,37 @@ public class Block : Ability
 {
     private float damageReduction;
     private float extraStaminaCost;
+    private PlayerController playerController;
 
-    public Block(string abilityName, float staminaCost, float damageReduction, string animationName, float extraStaminaCost, bool canStop)
-    : base(abilityName, staminaCost, animationName, canStop)
+    public Block(AbilityManager ctx, string abilityName, float staminaCost, float damageReduction, string animationName, float extraStaminaCost, bool canStop)
+    : base(ctx, abilityName, staminaCost, animationName, canStop)
     {
         this.damageReduction = damageReduction;
         this.extraStaminaCost = extraStaminaCost;
-
+        playerController = GameObject.FindObjectOfType<PlayerController>();
     }
 
-    public override void UseAbility(Animator animator, Transform enemyTransform, Transform handTransform)
+    public override void UseAbility()
     {
         if (isActive) return;
         isActive = true;
-        animator.Play(animationName);
+        playerController.IsBlocking = true;
+        ctx.Animator.Play(animationName);
     }
 
-    protected override void ContinueAbility(Transform enemyTransform, Transform handTransform)
+    public override void StopAbility()
+    {
+        if (!isActive) return;
+
+        if (canStop)
+        {
+            playerController.IsBlocking = false;
+            isActive = false;
+            ctx.Animator.SetTrigger("EscapeAction");
+            return;
+        }
+    }
+
+    protected override void ContinueAbility()
     { }
 }

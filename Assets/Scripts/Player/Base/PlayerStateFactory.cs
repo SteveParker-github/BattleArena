@@ -10,4 +10,9 @@ public class PlayerStateFactory
     {
         return new CombatState(context, this);
     }
+
+    public PlayerBaseState EndBattleState()
+    {
+        return new EndBattleState(context, this);
+    }
 }
