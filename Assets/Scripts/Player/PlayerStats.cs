@@ -5,9 +5,10 @@ using UnityEngine;
 public class PlayerStats : Stats
 {
     private int currentEXP;
+    private PlayerInfo playerInfo;
     public void Setup()
     {
-        PlayerInfo playerInfo = GameObject.FindObjectOfType<PlayerInfo>();
+        playerInfo = GameObject.FindObjectOfType<PlayerInfo>();
         level = playerInfo.Level;
         strength = playerInfo.Strength;
         intelligence = playerInfo.Intelligence;
@@ -17,6 +18,6 @@ public class PlayerStats : Stats
         maxHealth = baseHealth + (level + endurance) * incrementHealth;
         health = maxHealth;
 
-        Destroy(playerInfo.gameObject);
+        Debug.Log(playerInfo.PlayerName);
     }
 }

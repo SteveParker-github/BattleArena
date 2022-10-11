@@ -20,7 +20,7 @@ public class EndBattleState : PlayerBaseState
     {
         if (ctx.IsAcceptInput)
         {
-            SceneManager.LoadScene("MenuScene");
+            SceneManager.LoadScene("GameMenuScene");
             return;
         }
 

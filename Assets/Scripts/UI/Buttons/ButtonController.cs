@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class ButtonController : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointerEnterHandler, IPointerExitHandler
 {
@@ -14,7 +15,10 @@ public class ButtonController : MonoBehaviour, ISelectHandler, IDeselectHandler,
 
     public void OnSelect(BaseEventData baseEventData)
     {
-        border.SetActive(true);
+        if (gameObject.GetComponent<Button>().interactable)
+        {
+            border.SetActive(true);
+        }
     }
 
     public void OnDeselect(BaseEventData baseEventData)
@@ -24,7 +28,10 @@ public class ButtonController : MonoBehaviour, ISelectHandler, IDeselectHandler,
 
     public void OnPointerEnter(PointerEventData pointerEventData)
     {
-        border.SetActive(true);
+        if (gameObject.GetComponent<Button>().interactable)
+        {
+            border.SetActive(true);
+        }
     }
 
     public void OnPointerExit(PointerEventData pointerEventData)

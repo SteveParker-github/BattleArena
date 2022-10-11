@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    private PlayerInfo playerInfo;
     private bool isGamePaused;
     private bool isGameOver;
     private HUD hud;
@@ -14,6 +15,7 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        playerInfo = GameObject.FindObjectOfType<PlayerInfo>();
         isGameOver = false;
         hud = GameObject.FindObjectOfType<HUD>();
     }
@@ -25,6 +27,13 @@ public class GameManager : MonoBehaviour
 
     public void EndBattle(bool isPlayerWinner, int totalEXP)
     {
+        playerInfo.UpdateEXP(totalEXP);
+        
+        if (isPlayerWinner)
+        {
+            playerInfo.Money += 50;
+        }
+
         isGameOver = true;
         hud.EndGame(isPlayerWinner);
     }
