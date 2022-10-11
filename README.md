@@ -1,10 +1,10 @@
 # BattleArena
 
-Build: 
+Build: https://www.dropbox.com/s/e8d8euy455mc0kg/BattleArena.rar
 
 # How to Play:
 
-Try and survive and fight the enemies using magic or melee.
+Try and survive the enemies.
 
 Combat controls:
 
@@ -18,4 +18,3 @@ Combat controls:
 | Q             | Left Bumper      | Select previous target |
 | E             | Right Bumper     | Select Next target     |
 | Escape        | Start            | Pause Game             |
-
