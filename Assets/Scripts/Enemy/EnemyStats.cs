@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class EnemyStats : Stats
 {
-    [SerializeField] private int baseExperience = 10;
-    [SerializeField] private int incrementExperience = 1;
+    [SerializeField] private int baseExperience = 20;
+    [SerializeField] private int incrementExperience = 5;
     [SerializeField] private int baseStrength = 4;
     [SerializeField] private int incrementStrength = 1;
     [SerializeField] private int baseIntelligence = 8;
@@ -16,9 +16,9 @@ public class EnemyStats : Stats
     private int experiencePoints;
     public int ExperiencePoints { get => experiencePoints; }
 
-    public void Setup(int playerLevel)
+    public void Setup(int level)
     {
-        level = playerLevel + Random.Range(0, 4);
+        this.level = level;
 
         strength = baseStrength + level * incrementStrength;
         intelligence = baseIntelligence + level + incrementIntelligence;

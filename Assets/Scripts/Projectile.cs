@@ -22,7 +22,6 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        print("Hit!");
         if (other.tag != target) return;
 
         if (target == "Enemy")

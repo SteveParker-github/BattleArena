@@ -4,12 +4,17 @@ using UnityEngine;
 
 public class EnemyManager : MonoBehaviour
 {
+    [SerializeField] private List<GameObject> enemyPrefabs;
+    private int[] xLocations = new int[] { 0, -5, 5 };
     private PlayerController player;
     private Transform playerTransform;
     private List<GameObject> enemies;
     private GameManager gameManager;
     private int totalEXP;
+    private SpawnEnemies spawnEnemies;
+    private bool gameEnded;
     public GameManager GameManager { get => gameManager; }
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -17,16 +22,25 @@ public class EnemyManager : MonoBehaviour
         GameObject playerObject = GameObject.Find("Player");
         player = playerObject.GetComponent<PlayerController>();
         playerTransform = playerObject.transform.Find("Target");
-
+        spawnEnemies = GameObject.FindObjectOfType<SpawnEnemies>();
         enemies = new List<GameObject>();
 
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            enemies.Add(transform.GetChild(i).gameObject);
-            enemies[i].GetComponent<EnemyStats>().Setup(player.PlayerStats.Level);
-        }
+        CreateEnemies();
 
         totalEXP = 0;
+        gameEnded = false;
+    }
+
+    private void CreateEnemies()
+    {
+        for (int i = 0; i < spawnEnemies.Fighters.Length; i++)
+        {
+            enemies.Add(Instantiate(Resources.Load<GameObject>("Enemies/" + spawnEnemies.Fighters[i].enemyType), transform));
+            enemies[i].GetComponent<EnemyStats>().Setup(spawnEnemies.Fighters[i].level);
+            Vector3 position = enemies[i].transform.position;
+            position.x += xLocations[i];
+            enemies[i].transform.position = position;
+        }
     }
 
     public Transform GetPlayerTransform()
@@ -49,7 +63,12 @@ public class EnemyManager : MonoBehaviour
     {
         if (enemies.Count > 0) return true;
 
-        gameManager.EndBattle(true, totalEXP);
+        if (!gameEnded)
+        {
+            gameManager.EndBattle(true, totalEXP);
+            gameEnded = true;
+        }
+
         return false;
     }
 

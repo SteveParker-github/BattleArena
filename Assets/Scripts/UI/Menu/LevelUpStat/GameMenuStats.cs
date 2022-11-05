@@ -17,9 +17,9 @@ public class GameMenuStats : MonoBehaviour
     private GameObject resetButtonObject;
     private Button resetButton;
     private GameObject respecButtonObject;
+    private TextMeshProUGUI respecButtonText;
     private Button respecButton;
     private PlayerInfo playerInfo;
-
     private LevelUpStat strengthLevelUp;
     private LevelUpStat intelligenceLevelUp;
     private LevelUpEndurance enduranceLevelUp;
@@ -55,6 +55,8 @@ public class GameMenuStats : MonoBehaviour
         resetButton.onClick.AddListener(ResetOnClick);
         respecButton.onClick.AddListener(RespecOnClick);
 
+        respecButtonText = respecButtonObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+        
         playerInfo.SaveGame();
     }
 
@@ -65,16 +67,18 @@ public class GameMenuStats : MonoBehaviour
 
         confirmButtonObject.SetActive(leveledUp);
         resetButtonObject.SetActive(leveledUp);
+        respecButtonObject.SetActive(!leveledUp);
 
         confirmButton.interactable = int.Parse(statPointsText.text) == 0;
 
-        respecButton.interactable = playerInfo.EnoughForRespec();
+        respecButton.interactable = playerInfo.EnoughForRespec(respecButtonText);
     }
 
     private void ConfirmOnClick()
     {
         playerInfo.SkillPoints = 0;
         playerInfo.LeveledUp = false;
+        respecButtonObject.SetActive(true);
         playerInfo.SaveGame();
     }
 

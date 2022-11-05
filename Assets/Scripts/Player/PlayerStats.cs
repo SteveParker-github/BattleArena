@@ -17,7 +17,5 @@ public class PlayerStats : Stats
 
         maxHealth = baseHealth + (level + endurance) * incrementHealth;
         health = maxHealth;
-
-        Debug.Log(playerInfo.PlayerName);
     }
 }

@@ -73,7 +73,7 @@ public class MagicCast : Ability
     {
         hasSentMagic = true;
 
-        GameObject projectile = GameObject.Instantiate(Resources.Load<GameObject>(abilityName + "Projectile"), ctx.HandTransform.position, ctx.HandTransform.rotation);
+        GameObject projectile = GameObject.Instantiate(Resources.Load<GameObject>("Projectiles/" + abilityName + "Projectile"), ctx.HandTransform.position, ctx.HandTransform.rotation);
         projectile.GetComponent<Projectile>().Setup(ctx.EnemyTransform, damage, ctx.Target, ctx.GameManager);
     }
 }

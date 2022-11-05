@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using TMPro;
 
 public class PlayerInfo : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class PlayerInfo : MonoBehaviour
     private int skillPoints;
     private bool leveledUp;
     private int money;
+    private string gameMode;
 
     public int Level { get => level; }
     public int Strength { get => strength; set => strength = value; }
@@ -28,6 +30,7 @@ public class PlayerInfo : MonoBehaviour
     public int SkillPoints { get => skillPoints; set => skillPoints = value; }
     public bool LeveledUp { get => leveledUp; set => leveledUp = value; }
     public int Money { get => money; set => money = value; }
+    public string GameMode { get => gameMode; set => gameMode = value; }
 
     // Start is called before the first frame update
     void Start()
@@ -87,9 +90,11 @@ public class PlayerInfo : MonoBehaviour
         return currentEXP + " / " + ((level * 100) * 1.1f);
     }
 
-    public bool EnoughForRespec()
+    public bool EnoughForRespec(TextMeshProUGUI respecButtonText)
     {
-        return money >= (level * 100);
+        int cost = level * 100;
+        respecButtonText.text = "Respec for " + cost;
+        return money >= cost;
     }
 
     public string Respec()

@@ -103,7 +103,6 @@ public class PlayerController : MonoBehaviour
 
         if (playerStats.Health <= 0)
         {
-            print("Player is dead!");
             gameManager.EndBattle(false, 0);
             animator.SetFloat(movementX, 0);
             animator.SetFloat(movementY, 0);

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using TMPro;
 
 public class HUD : MonoBehaviour
@@ -20,6 +21,8 @@ public class HUD : MonoBehaviour
     private float uAlphaLevel = 1.0f;
     private float amplitude;
     private float offSet;
+    private bool usingKeyboard;
+    private bool imageSwapped;
 
     void Awake()
     {
@@ -41,10 +44,38 @@ public class HUD : MonoBehaviour
         gameOver = false;
         amplitude = 2 / (uAlphaLevel - lAlphaLevel);
         offSet = (uAlphaLevel + lAlphaLevel) / 2;
+
+        usingKeyboard = true;
+        imageSwapped = false;
     }
 
     private void Update()
     {
+        if (Keyboard.current.anyKey.wasPressedThisFrame && !usingKeyboard)
+        {
+            usingKeyboard = true;
+            imageSwapped = true;
+        }
+
+        if (Gamepad.current.wasUpdatedThisFrame && usingKeyboard)
+        {
+            usingKeyboard = false;
+            imageSwapped = true;
+        }
+
+        if (imageSwapped)
+        {
+            for (int i = 0; i < actionButtons.Count; i++)
+            {
+                actionButtons[i].transform.GetChild(0).GetChild(0).gameObject.SetActive(usingKeyboard);
+                actionButtons[i].transform.GetChild(0).GetChild(1).gameObject.SetActive(!usingKeyboard);
+            }
+
+            imageSwapped = false;
+        }
+
+
+
         if (!gameOver) return;
 
         Vector4 tempColour = continueMessageText.color;

@@ -9,9 +9,12 @@ public class GameManager : MonoBehaviour
     private bool isGamePaused;
     private bool isGameOver;
     private HUD hud;
+    private bool isPlayerWinner;
 
     public bool IsGamePaused { get => isGamePaused; set => isGamePaused = value; }
     public bool IsGameOver { get => isGameOver; set => isGameOver = value; }
+    public bool IsPlayerWinner { get => isPlayerWinner; }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -28,6 +31,7 @@ public class GameManager : MonoBehaviour
     public void EndBattle(bool isPlayerWinner, int totalEXP)
     {
         playerInfo.UpdateEXP(totalEXP);
+        this.isPlayerWinner = isPlayerWinner;
         
         if (isPlayerWinner)
         {
