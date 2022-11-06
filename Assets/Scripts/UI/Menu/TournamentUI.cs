@@ -84,6 +84,11 @@ public class TournamentUI : MonoBehaviour
 
             for (int j = 0; j < roundName.Length; j++)
             {
+                if (i == tournamentFile.roundNumber -1 && roundName[j] == playerInfo.PlayerName)
+                {
+                    Instantiate(Resources.Load<GameObject>("UI/RoundBorder"), fighterText[j].gameObject.transform);
+                }
+
                 fighterText[j].text = roundName[j];
             }
         }

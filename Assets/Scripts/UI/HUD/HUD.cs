@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 using TMPro;
 
 public class HUD : MonoBehaviour
@@ -57,8 +58,24 @@ public class HUD : MonoBehaviour
             imageSwapped = true;
         }
 
-        if (Gamepad.current.wasUpdatedThisFrame && usingKeyboard)
+        bool gamePadWasPressed = false;
+
+        for (int i = 0; i < Gamepad.current.allControls.Count; i++)
         {
+            var c = Gamepad.current.allControls[i];
+            if (c is ButtonControl)
+            {
+                if (((ButtonControl)c).wasPressedThisFrame)
+                {
+                    Debug.Log("Using Pad");
+                    gamePadWasPressed = true;
+                }
+            }
+        }
+
+        if (gamePadWasPressed && usingKeyboard)
+        {
+            print("gamepad was updated");
             usingKeyboard = false;
             imageSwapped = true;
         }
@@ -82,7 +99,7 @@ public class HUD : MonoBehaviour
         float alpha = Mathf.Sin(Time.time * 2f) / amplitude + offSet;
         tempColour.w = alpha;
         continueMessageText.color = tempColour;
-        
+
         tempColour = gameEndImage.color;
 
         if (tempColour.w >= 1) return;
