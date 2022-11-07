@@ -1,6 +1,6 @@
 # BattleArena
 
-Build: https://www.dropbox.com/s/e8d8euy455mc0kg/BattleArena.rar
+Build: https://www.dropbox.com/s/y14j73eaotblbjc/BattleArena.zip?
 
 # How to Play:
 
